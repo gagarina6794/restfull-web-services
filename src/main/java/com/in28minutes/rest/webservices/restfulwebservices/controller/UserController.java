@@ -29,7 +29,7 @@ public class UserController {
         return daoService.findAll();
     }
 
-    @GetMapping(path = "/users/{id}", produces = {"application/json"})
+    @GetMapping(path = "/users/{id}")
     public Resource<User> getUser(@PathVariable int id) {
         final User user = daoService.findOne(id);
         if (user == null) {
