@@ -3,6 +3,8 @@ package com.in28minutes.rest.webservices.restfulwebservices.controller;
 import com.in28minutes.rest.webservices.restfulwebservices.exception.UserNotFoundException;
 import com.in28minutes.rest.webservices.restfulwebservices.model.User;
 import com.in28minutes.rest.webservices.restfulwebservices.repository.UserDaoService;
+import org.springframework.hateoas.Resource;
+import org.springframework.hateoas.mvc.ControllerLinkBuilder;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
@@ -10,6 +12,9 @@ import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 import javax.validation.Valid;
 import java.net.URI;
 import java.util.List;
+
+import static org.springframework.hateoas.mvc.ControllerLinkBuilder.linkTo;
+import static org.springframework.hateoas.mvc.ControllerLinkBuilder.methodOn;
 
 @RestController
 public class UserController {
@@ -24,13 +29,16 @@ public class UserController {
         return daoService.findAll();
     }
 
-    @GetMapping("/users/{id}")
-    public User getUser(@PathVariable int id) {
+    @GetMapping(path = "/users/{id}", produces = {"application/json"})
+    public Resource<User> getUser(@PathVariable int id) {
         final User user = daoService.findOne(id);
-        if(user == null) {
+        if (user == null) {
             throw new UserNotFoundException("id-" + id);
         }
-        return user;
+        Resource<User> resource = new Resource<>(user);
+        ControllerLinkBuilder linkTo = linkTo(methodOn(this.getClass()).getAll());
+        resource.add(linkTo.withRel("all-users"));
+        return resource;
     }
 
     @PostMapping("/users")
@@ -47,7 +55,7 @@ public class UserController {
     @DeleteMapping("/users/{id}")
     public void deleteUser(@PathVariable int id) {
         final User deletedUser = daoService.deleteById(id);
-        if(deletedUser == null) {
+        if (deletedUser == null) {
             throw new UserNotFoundException("id-" + id);
         }
     }
